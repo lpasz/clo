@@ -6,6 +6,8 @@ services:
     build: .
     depends_on:
       - db
+    # ports:
+    #   - "81:80"
     expose:
       - "80"
     deploy:
@@ -20,6 +22,8 @@ services:
     build: .
     depends_on:
       - db
+    # ports:
+    #   - "82:80"
     expose:
       - "80"
     deploy:
