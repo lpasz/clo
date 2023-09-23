@@ -1,0 +1,10 @@
+/.calva/*
+/.clj-kondo/*
+/.cpcache/*
+.env.edn
+.nrepl-port
+/.lsp/*
+/target/*
+/.shadow-cljs
+/node_modules
+/resources/public/assets/js/*

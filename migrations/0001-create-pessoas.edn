@@ -1,0 +1,7 @@
+ {:up [" CREATE TABLE pessoas (id SERIAL PRIMARY KEY,
+                               apelido TEXT UNIQUE NOT NULL,
+                               nome TEXT NOT NULL,
+                               nascimento DATE NOT NULL,
+                               stack TEXT,
+                               search TEXT)"]
+ :down [" DROP TABLE pessoas "]}
