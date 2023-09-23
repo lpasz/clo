@@ -24,7 +24,7 @@
 (def app (ring/ring-handler router))
 
 (defn start []
-  (jetty/run-jetty #'app {:port 80, :join? false}))
+  (jetty/run-jetty #'app {:port 80, :join? true}))
 
 (defn -main [] (start))
 
