@@ -3,5 +3,5 @@
                                nome TEXT NOT NULL,
                                nascimento DATE NOT NULL,
                                stack TEXT,
-                               search TEXT)"]
+                               search TEXT) "]
  :down [" DROP TABLE pessoas "]}
