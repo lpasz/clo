@@ -11,21 +11,20 @@
             :dbname "postgres"
             :password "postgres"})
 
-(defn handler [_request]
-;;   (clojure.pprint/pprint request)
+(defn handler [_]
   {:status 200})
 
-(def router (ring/router [["/pessoas" {:post handler
-                                       :get handler}]
-                          ["/pessoas/:id" {:get handler}]
-                          ["/contagem-pessoas" {:get handler}]]))
+
+(def router
+  (ring/router [["/pessoas" {:post handler
+                             :get handler}]
+                ["/pessoas/:id" {:get handler}]
+                ["/contagem-pessoas" {:get handler}]]))
 
 (def app (ring/ring-handler router))
 
 (defn start []
-  (jetty/run-jetty #'app {:port 8080, :join? false}))
-
-
+  (jetty/run-jetty #'app {:port 3002, :join? false}))
 
 (defn -main [] (start))
 
@@ -34,5 +33,4 @@
   (r/match-by-path router "/pessoas")
   (r/match-by-path router "")
   (app {:request-method :post :uri "/api/shorty" :body {:url "www.google.com/api"}})
-  (app {:request-method :get :uri "/pessoas" :query-string "t=macaco"})
-  )
+  (app {:request-method :get :uri "/pessoas" :query-string "t=macaco"}))
