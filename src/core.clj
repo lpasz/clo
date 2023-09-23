@@ -11,12 +11,12 @@
             :dbname "postgres"
             :password "postgres"})
 
-(defn handler [_]
-  {:status 200})
+(defn created [_] {:status 201})
+(defn handler [_] {:status 200})
 
 
 (def router
-  (ring/router [["/pessoas" {:post handler
+  (ring/router [["/pessoas" {:post created
                              :get handler}]
                 ["/pessoas/:id" {:get handler}]
                 ["/contagem-pessoas" {:get handler}]]))
@@ -24,7 +24,7 @@
 (def app (ring/ring-handler router))
 
 (defn start []
-  (jetty/run-jetty #'app {:port 3002, :join? false}))
+  (jetty/run-jetty #'app {:port 80, :join? false}))
 
 (defn -main [] (start))
 
