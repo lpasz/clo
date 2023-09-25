@@ -1,6 +1,6 @@
  {:up [" CREATE TABLE pessoas (id SERIAL PRIMARY KEY,
-                               apelido TEXT UNIQUE NOT NULL,
-                               nome TEXT NOT NULL,
+                               apelido varchar(32) UNIQUE NOT NULL,
+                               nome varchar(100) NOT NULL,
                                nascimento DATE NOT NULL,
                                stack TEXT,
                                search TEXT) "]
