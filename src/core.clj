@@ -111,7 +111,7 @@
 
 (defn start []
   (println "Jetty is starting...")
-  (jetty/run-jetty #'app {:port 8081, :join? false})
+  (jetty/run-jetty #'app {:port 8080, :join? false})
   (println "Jetty is running..."))
 
 (defn -main []
