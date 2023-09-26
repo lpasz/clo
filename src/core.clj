@@ -42,7 +42,7 @@
      :idle-timeout       600000
      :max-lifetime       1800000
      :minimum-idle       10
-     :maximum-pool-size  20
+     :maximum-pool-size  50
      :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 
@@ -105,11 +105,11 @@
 
 (defn search-term [{:keys [query-params]}]
   (if-let [term (query-params "t")]
-    ;; (->> {:select [:id :apelido :nome :nascimento :stack]
-    ;;       :from :pessoas
-    ;;       :where [:ilike :search (str "%" term "%")]}
-    ;;      query
-    (resp/response [])
+    (->> {:select [:id :apelido :nome :nascimento :stack]
+          :from :pessoas
+          :where [:ilike :search (str "%" term "%")]}
+         query
+         resp/response)
     (resp/status 400)))
 
 (defn search-id [{:keys [path-params]}]
