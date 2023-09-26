@@ -1,13 +1,23 @@
 {:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        ;; routing
         metosin/reitit {:mvn/version "0.5.18"}
+        ;; http server
         ring/ring-core {:mvn/version "1.9.6"}
         ring/ring-jetty-adapter {:mvn/version "1.8.2"}
+        ;; database connection
         org.clojure/java.jdbc {:mvn/version "0.7.12"}
+        ;; build tools clojure
         org.clojure/tools.build {:mvn/version "0.9.1"}
+        ;; postgres 
         org.postgresql/postgresql {:mvn/version "42.3.3"}
+        ;; sql query
         com.github.seancorfield/honeysql {:mvn/version "2.4.962"}
+        ;; migrations
         dev.weavejester/ragtime {:mvn/version "0.9.3"}
-        }
+        ;; connection pool
+        hikari-cp/hikari-cp {:mvn/version "3.0.1"}
+        ;; conection pool logging
+        org.slf4j/slf4j-simple {:mvn/version "2.0.0-alpha0"}}
  :aliases {:build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.1" :git/sha "27ff8a4"}}
                    :ns-default build}}}

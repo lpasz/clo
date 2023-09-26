@@ -1,60 +1,74 @@
 (ns core
   (:gen-class)
-  (:require [reitit.ring :as ring]
-            [ring.util.response :as resp]
-            [ring.adapter.jetty :as jetty]
-            [clojure.java.jdbc :as j]
-            [honey.sql :as sql]
+  (:require [clojure.java.jdbc :as j]
             [clojure.spec.alpha :as s]
-            [reitit.coercion.spec]
-            [reitit.dev.pretty :as pretty]
-            [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.exception :as exception]
-            [reitit.ring.middleware.parameters :as parameters]
+            [clojure.string :as str]
+            [honey.sql :as sql]
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as rag]
-            [clojure.string :as str])
+            [reitit.coercion.spec]
+            [reitit.dev.pretty :as pretty]
+            [reitit.ring :as ring]
+            [reitit.ring.middleware.exception :as exception]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.adapter.jetty :as jetty]
+            [hikari-cp.core :as hcp]
+            [ring.util.response :as resp])
   (:import [java.sql Date]))
 
 
 ;; Database
 
-(def pg-uri (or (System/getenv "POSTGRES_URL")
-                "postgres://postgres:postgres@postgres:5432/postgres"))
+(def postgres-url (or (System/getenv "POSTGRES_URL")
+                      "postgres://postgres:postgres@localhost:5432/postgres"))
 
-pg-uri
+(def db-uri (java.net.URI. postgres-url))
+
+(defn datasource-options []
+  (let [[username password] (str/split (or (.getUserInfo db-uri) ":") #":")]
+    {:username           (or username (System/getProperty "user.name"))
+     :password           (or password "")
+     :port-number        (.getPort db-uri)
+     :database-name      (str/replace-first (.getPath db-uri) "/" "")
+     :server-name        (.getHost db-uri)
+     :auto-commit        true
+     :read-only          false
+     :adapter            "postgresql"
+     :connection-timeout 30000
+     :validation-timeout 5000
+     :idle-timeout       600000
+     :max-lifetime       1800000
+     :minimum-idle       10
+     :maximum-pool-size  20
+     :pool-name          "db-pool"
+     :register-mbeans    false}))
+
+(def db-conn
+  (delay {:datasource (hcp/make-datasource (datasource-options))}))
 
 (defn query [q]
   (->> q
        (sql/format)
-       (j/query pg-uri)))
+       (j/query @db-conn)))
 
 (defn one [q]
   (first (query q)))
 
 (defn insert [q]
-  (-> pg-uri
+  (-> @db-conn
       (j/execute! (sql/format q) {:return-keys ["id"]})
       (:id)))
 
 ;; Migrations
 
-(def datastore (jdbc/sql-database pg-uri))
-
 (defn config []
-  {:datastore  datastore
+  {:datastore  (jdbc/sql-database (System/getenv "POSTGRES_URL"))
    :migrations (jdbc/load-directory "./migrations")})
 
 (defn migrate []
-  (try
-    (println "starting migrations")
-    (println pg-uri)
-    (println (j/query pg-uri ["SELECT current_database()"]))
-    (rag/migrate (config))
-    (println "finished migrations")
-    (catch Exception _ (println "error running migrations"))))
-
+  (rag/migrate (config)))
 
 (defn rollback []
   (rag/rollback (config)))
