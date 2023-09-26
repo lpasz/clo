@@ -13,7 +13,6 @@
             [reitit.ring.middleware.parameters :as parameters]
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
-            [core :as core]
             [ragtime.repl :as rag]
             [clojure.string :as str]
             [clojure.pprint :as pprint])
@@ -142,7 +141,7 @@
   (println "Jetty is running..."))
 
 (defn -main []
-  ;; (u/migrate)
+  (migrate)
   (start))
 
 (comment
