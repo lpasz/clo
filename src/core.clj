@@ -105,11 +105,11 @@
 
 (defn search-term [{:keys [query-params]}]
   (if-let [term (query-params "t")]
-    (->> {:select [:id :apelido :nome :nascimento :stack]
-          :from :pessoas
-          :where [:ilike :search (str "%" term "%")]}
-         query
-         resp/response)
+    ;; (->> {:select [:id :apelido :nome :nascimento :stack]
+    ;;       :from :pessoas
+    ;;       :where [:ilike :search (str "%" term "%")]}
+    ;;      query
+    (resp/response [])
     (resp/status 400)))
 
 (defn search-id [{:keys [path-params]}]
