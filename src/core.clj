@@ -106,7 +106,9 @@
   (-> {:select [[:%count.*]]
        :from :pessoas}
       (query)
+      (first)
       (:count)
+      (str)
       (resp/response)))
 
 ;; Router
