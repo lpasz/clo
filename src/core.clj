@@ -22,7 +22,7 @@
 ;; Database
 
 (def pg-db {:dbtype "postgresql"
-            :port 5432
+            :port 5444
             :user "postgres"
             :dbname "postgres"
             :password "postgres"})
@@ -50,7 +50,6 @@
 
 (defn rollback []
   (rag/rollback (config)))
-
 
 ;; Handlers
 
@@ -137,12 +136,9 @@
 
 (defn start []
   (println "Jetty is starting...")
-  (jetty/run-jetty #'app {:port 8080, :join? false})
+  (jetty/run-jetty #'app {:port 8081, :join? false})
   (println "Jetty is running..."))
 
 (defn -main []
   (migrate)
-  (start))
-
-(comment
   (start))
