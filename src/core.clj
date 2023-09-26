@@ -14,39 +14,47 @@
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as rag]
-            [clojure.string :as str]
-            [clojure.pprint :as pprint])
+            [clojure.string :as str])
   (:import [java.sql Date]))
 
 
 ;; Database
 
-(def pg-db {:dbtype "postgresql"
-            :port 5444
-            :user "postgres"
-            :dbname "postgres"
-            :password "postgres"})
+(def pg-uri (or (System/getenv "POSTGRES_URL")
+                "postgres://postgres:postgres@postgres:5432/postgres"))
+
+pg-uri
 
 (defn query [q]
   (->> q
        (sql/format)
-       (j/query pg-db)))
+       (j/query pg-uri)))
+
+(defn one [q]
+  (first (query q)))
 
 (defn insert [q]
-  (-> pg-db
+  (-> pg-uri
       (j/execute! (sql/format q) {:return-keys ["id"]})
       (:id)))
 
 ;; Migrations
 
-(def datastore (jdbc/sql-database core/pg-db))
+(def datastore (jdbc/sql-database pg-uri))
 
 (defn config []
   {:datastore  datastore
    :migrations (jdbc/load-directory "./migrations")})
 
 (defn migrate []
-  (rag/migrate (config)))
+  (try
+    (println "starting migrations")
+    (println pg-uri)
+    (println (j/query pg-uri ["SELECT current_database()"]))
+    (rag/migrate (config))
+    (println "finished migrations")
+    (catch Exception _ (println "error running migrations"))))
+
 
 (defn rollback []
   (rag/rollback (config)))
@@ -56,12 +64,12 @@
 (defn max-n-characters [str n]
   (>= n (count str)))
 
-(s/def ::stack (s/or :nil nil? :stack (s/coll-of (s/and string? #(max-n-characters % 32)))))
+(s/def ::tech (s/coll-of (s/and string? #(max-n-characters % 32))))
+(s/def ::stack (s/or :nil nil?
+                     :stack ::tech))
 
 
 (defn created [{:keys [body-params]}]
-  (println "create start 1")
-  (clojure.pprint/pprint body-params)
   (try
     (let [data {:nome (:nome body-params),
                 :stack (if (s/valid? ::stack (:stack body-params))
@@ -74,8 +82,6 @@
           data (assoc data :search search)
           id (insert {:insert-into [:pessoas] :values [data]})
           location (str "/pessoas/" id)]
-
-      (println id)
       (resp/created location))
     (catch Exception _ (resp/status 422))))
 
@@ -103,8 +109,7 @@
 (defn count-users [_]
   (-> {:select [[:%count.*]]
        :from :pessoas}
-      (query)
-      (first)
+      (one)
       (:count)
       (str)
       (resp/response)))
@@ -134,10 +139,12 @@
                         ["/contagem-pessoas" {:get count-users}]]
                        router-config)))
 
+(def server-port (Integer/parseInt (or (System/getenv "SERVER_PORT") "8080")))
+
 (defn start []
-  (println "Jetty is starting...")
-  (jetty/run-jetty #'app {:port 8081, :join? false})
-  (println "Jetty is running..."))
+  (println (str "Jetty is starting in " server-port "..."))
+  (jetty/run-jetty #'app {:port server-port, :join? false})
+  (println (str "Jetty is running on " server-port "...")))
 
 (defn -main []
   (migrate)
