@@ -1,22 +1,22 @@
 (ns core
   (:gen-class)
-  (:require
-   [reitit.ring :as ring]
-   [ring.util.response :as resp]
-   [ring.adapter.jetty :as jetty]
-   [clojure.java.jdbc :as j]
-   [honey.sql :as sql]
-   [clojure.spec.alpha :as s]
-   [reitit.coercion.spec]
-   [reitit.dev.pretty :as pretty]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [reitit.ring.middleware.exception :as exception]
-   [reitit.ring.middleware.parameters :as parameters]
-   [muuntaja.core :as m]
-   [ragtime.jdbc :as jdbc]
-   [core :as core]
-   [ragtime.repl :as rag]
-   [clojure.pprint :as pprint])
+  (:require [reitit.ring :as ring]
+            [ring.util.response :as resp]
+            [ring.adapter.jetty :as jetty]
+            [clojure.java.jdbc :as j]
+            [honey.sql :as sql]
+            [clojure.spec.alpha :as s]
+            [reitit.coercion.spec]
+            [reitit.dev.pretty :as pretty]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.exception :as exception]
+            [reitit.ring.middleware.parameters :as parameters]
+            [muuntaja.core :as m]
+            [ragtime.jdbc :as jdbc]
+            [core :as core]
+            [ragtime.repl :as rag]
+            [clojure.string :as str]
+            [clojure.pprint :as pprint])
   (:import [java.sql Date]))
 
 
@@ -36,7 +36,7 @@
 (defn insert [q]
   (-> pg-db
       (j/execute! (sql/format q) {:return-keys ["id"]})
-      (:generated_key)))
+      (:id)))
 
 ;; Migrations
 
@@ -53,34 +53,61 @@
   (rag/rollback (config)))
 
 
-;; (defn max-n-characters [str n]
-;;   (>= n (count str)))
+;; Handlers
 
-;; (s/def ::stack (s/or :nil nil? :stack (s/coll-of (s/and string? #(max-n-characters % 32)))))
+(defn max-n-characters [str n]
+  (>= n (count str)))
 
-;; (defn created [{:keys [body-params]}]
-;;   (resp/created "/pessoas/1"))
+(s/def ::stack (s/or :nil nil? :stack (s/coll-of (s/and string? #(max-n-characters % 32)))))
 
 
-;; (comment
-;; (defn created [{:keys [body-params]}]
-;;   (try
-;;     (let [data {:nome (:nome body-params),
-;;                 :stack (if (s/valid? ::stack (:stack body-params))
-;;                          (str/join " " (:stack body-params))
-;;                          (throw (Exception. "Invalid Stack"))),
-;;                 :apelido (:apelido body-params),
-;;                 :nascimento (Date/valueOf (:nascimento body-params))}
-;;           values (vals (select-keys data [:nome :stack :apelido]))
-;;           data-with-search (assoc data :search (str/join " " values))]
-;;       (insert {:insert-into [:pessoas]
-;;                :values [data-with-search]})
+(defn created [{:keys [body-params]}]
+  (println "create start 1")
+  (clojure.pprint/pprint body-params)
+  (try
+    (let [data {:nome (:nome body-params),
+                :stack (if (s/valid? ::stack (:stack body-params))
+                         (str/join " " (:stack body-params))
+                         (throw (Exception. "Invalid Stack"))),
+                :apelido (:apelido body-params),
+                :nascimento (Date/valueOf (:nascimento body-params))}
+          values (-> data (select-keys [:nome :stack :apelido]) (vals))
+          search (str/join " " values)
+          data (assoc data :search search)
+          id (insert {:insert-into [:pessoas] :values [data]})
+          location (str "/pessoas/" id)]
 
-;;       (resp/created "/pessoas/1"))
-;;     (catch Exception _ (resp/status 422))))
+      (println id)
+      (resp/created location))
+    (catch Exception _ (resp/status 422))))
 
-;; (defn handler [_]
-;;   (resp/created ""))
+
+
+(defn search-term [{:keys [query-params]}]
+  (if-let [term (query-params "t")]
+    (->> {:select [:id :apelido :nome :nascimento :stack]
+          :from :pessoas
+          :where [:ilike :search (str "%" term "%")]}
+         query
+         resp/response)
+    (resp/status 400)))
+
+(defn search-id [{:keys [path-params]}]
+  (if-let [result (->> {:select [:id :apelido :nome :nascimento :stack]
+                        :limit 1
+                        :from :pessoas
+                        :where [:= :id (Integer/parseInt (:id path-params))]}
+                       (query)
+                       (first))]
+    (resp/response result)
+    (resp/status 404)))
+
+(defn count-users [_]
+  (-> {:select [[:%count.*]]
+       :from :pessoas}
+      (query)
+      (:count)
+      (resp/response)))
 
 ;; Router
 
@@ -90,23 +117,21 @@
           :muuntaja m/instance
           :middleware [;; Put :query-params in the request, otherwise is just :query-string
                        parameters/parameters-middleware
-                       ;; Not required for the example since we don't return bodies
-                       ;;  muuntaja/format-response-middleware
-                       ;; Required to parse body into :body-params
-                       muuntaja/format-request-middleware
                        ;; Put :body-params in the request, otherwise is just :body
                        muuntaja/format-negotiate-middleware
+                       ;; Not required for the example since we don't return bodies
+                       muuntaja/format-response-middleware
+                       ;; Required to parse body into :body-params
+                       muuntaja/format-request-middleware
                        (exception/create-exception-middleware
                         {::exception/default (partial exception/wrap-log-to-console
                                                       exception/default-handler)})]}})
 
 (def app (ring/ring-handler
-          (ring/router [["/pessoas" {:post (fn [_req]
-                                            ;;  (clojure.pprint/pprint req)
-                                             (resp/created "/pessoas/1"))
-                                     :get (fn [_] (resp/status 200))}]
-                        ["/pessoas/:id" {:get (fn [_] (resp/status 200))}]
-                        ["/contagem-pessoas" {:get (fn [_] (resp/status 200))}]]
+          (ring/router [["/pessoas" {:post created
+                                     :get search-term}]
+                        ["/pessoas/:id" {:get search-id}]
+                        ["/contagem-pessoas" {:get count-users}]]
                        router-config)))
 
 (defn start []
