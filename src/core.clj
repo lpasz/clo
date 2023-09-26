@@ -10,6 +10,7 @@
             [reitit.coercion.spec]
             [reitit.dev.pretty :as pretty]
             [reitit.ring :as ring]
+            [ragtime.strategy :as rs]
             [reitit.ring.middleware.exception :as exception]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
@@ -42,7 +43,7 @@
      :max-lifetime       1800000
      :minimum-idle       10
      :maximum-pool-size  20
-     :pool-name          "db-pool"
+     :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 
 (def db-conn
@@ -65,7 +66,8 @@
 
 (defn config []
   {:datastore  (jdbc/sql-database (System/getenv "POSTGRES_URL"))
-   :migrations (jdbc/load-directory "./migrations")})
+   :migrations (jdbc/load-directory "./migrations")
+   :strategy rs/rebase})
 
 (defn migrate []
   (rag/migrate (config)))
