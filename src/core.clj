@@ -184,13 +184,12 @@
 
 (defn start []
   (println (str "Jetty is starting in " server-port "..."))
-  (jetty/run-jetty #'app {:port 3001, :join? false})
+  (jetty/run-jetty #'app {:port server-port, :join? false})
   (println (str "Jetty is running on " server-port "...")))
 
 (defn -main []
-  (migrate)
+  (try (migrate)
+       (catch Exception e nil))
   (start)
   ;; (bulk-insert)
   )
-
-(-main)
