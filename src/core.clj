@@ -3,7 +3,7 @@
   (:require [clojure.java.jdbc :as j]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [clojure.core.async :as a]
+            ;; [clojure.core.async :as a]
             [honey.sql :as sql]
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
@@ -66,7 +66,7 @@
 ;; Migrations
 
 (defn config []
-  {:datastore  (jdbc/sql-database (System/getenv "POSTGRES_URL"))
+  {:datastore  (jdbc/sql-database postgres-url)
    :migrations (jdbc/load-directory "./migrations")
    :strategy rs/rebase})
 
@@ -98,16 +98,18 @@
 (defn parse-search-term [{:keys [nome stack apelido]}]
   (str/join ";" [nome stack apelido]))
 
-(def bulk-data (ref []))
+;; (def bulk-data (ref []))
 
-(defn bulk-insert []
-  (a/go-loop []
-    (Thread/sleep 2000)
-    (dosync
-     (insert {:insert-into [:pessoas]
-              :values [@bulk-data]})
-     (ref-set bulk-data [])
-     (recur))))
+;; (defn bulk-insert []
+;;   (a/go-loop []
+;;     (Thread/sleep 2000)
+;;     (dosync
+;;      (insert {:insert-into [:pessoas]
+;;               :values [@bulk-data]})
+;;      (ref-set bulk-data [])
+;;      (recur))))
+
+(query {:select 2})
 
 (defn create-pessoa [body-params]
   (let [id (uuid)
@@ -116,13 +118,16 @@
                      :stack (parse-stack body-params),
                      :nascimento (parse-nascimento body-params)
                      :search (parse-search-term body-params)})]
-    (dosync
-     (alter bulk-data conj data))))
+    ;; (query {:insert-into [:pessoas] :values [data]})
+    (query {:select 1})
+    (uuid)))
+
 
 (defn pessoa-by-search-term [term]
-  (-> {:select [:id :apelido :nome :nascimento :stack]
-       :from :pessoas
-       :where [:ilike :search (str "%" term "%")]}
+  ;; (-> {:select [:id :apelido :nome :nascimento :stack]
+  ;;      :from :pessoas
+  ;;      :where [:ilike :search (str "%" term "%")]}
+  (-> {:select 1}
       (query)))
 
 (defn search-term [{:keys [query-params]}]
@@ -133,11 +138,13 @@
     (resp/status 400)))
 
 (defn pessoa-by-id [id]
-  (->> {:select [:id :apelido :nome :nascimento :stack]
-        :limit 1
-        :from :pessoas
-        :where [:= :id id]}
-       (one)))
+  (->>
+  ;;  {:select [:id :apelido :nome :nascimento :stack]
+  ;;   :limit 1
+  ;;   :from :pessoas
+  ;;   :where [:= :id id]}
+   {:select 1}
+   (query)))
 
 
 ;; Handlers
@@ -200,4 +207,5 @@
 (defn -main []
   (migrate)
   (start)
-  (bulk-insert))
+  ;; (bulk-insert)
+  )
