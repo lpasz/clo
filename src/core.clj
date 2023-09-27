@@ -98,16 +98,17 @@
   (str/join ";" [nome stack apelido]))
 
 (defn create-pessoa [body-params]
-  (let [id (uuid)
-        data (merge body-params
-                    {:id id
-                     :stack (parse-stack body-params),
-                     :nascimento (parse-nascimento body-params)
-                     :search (parse-search-term body-params)})]
+  (let [id (uuid)]
+        ;; data (merge body-params
+        ;;             {:id id
+        ;;              :stack (parse-stack body-params),
+        ;;              :nascimento (parse-nascimento body-params)
+        ;;              :search (parse-search-term body-params)})]
     ;; (query {:insert-into [:pessoas] :values [data]})
     (query {:select 1})
     (uuid)))
 
+(create-pessoa {})
 
 (defn pessoa-by-search-term [term]
   (-> {:select [:id :apelido :nome :nascimento :stack]
@@ -132,7 +133,6 @@
   ;;   :where [:= :id id]}
    {:select 1}
    (query)))
-
 
 ;; Handlers
 
