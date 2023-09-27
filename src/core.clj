@@ -3,6 +3,7 @@
   (:require [clojure.java.jdbc :as j]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [clojure.core.async :as a]
             [honey.sql :as sql]
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
@@ -75,7 +76,7 @@
 (defn rollback []
   (rag/rollback (config)))
 
-;; Handlers
+;; Context 
 
 (defn max-n-characters [str n]
   (>= n (count str)))
@@ -84,42 +85,76 @@
 (s/def ::stack (s/or :nil nil?
                      :stack ::tech))
 
+(defn uuid [] (java.util.UUID/randomUUID))
+
+(defn parse-stack [{:keys [stack]}]
+  (if (s/valid? ::stack stack)
+    (str/join ";" stack)
+    (throw (Exception. "Invalid Stack"))))
+
+(defn parse-nascimento [{:keys [nascimento]}]
+  (Date/valueOf nascimento))
+
+(defn parse-search-term [{:keys [nome stack apelido]}]
+  (str/join ";" [nome stack apelido]))
+
+(def bulk-data (ref []))
+
+(defn bulk-insert []
+  (a/go-loop []
+    (Thread/sleep 2000)
+    (dosync
+     (insert {:insert-into [:pessoas]
+              :values [@bulk-data]})
+     (ref-set bulk-data [])
+     (recur))))
+
+(defn create-pessoa [body-params]
+  (let [id (uuid)
+        data (merge body-params
+                    {:id id
+                     :stack (parse-stack body-params),
+                     :nascimento (parse-nascimento body-params)
+                     :search (parse-search-term body-params)})]
+    (dosync
+     (alter bulk-data conj data))))
+
+(defn pessoa-by-search-term [term]
+  (-> {:select [:id :apelido :nome :nascimento :stack]
+       :from :pessoas
+       :where [:ilike :search (str "%" term "%")]}
+      (query)))
+
+(defn search-term [{:keys [query-params]}]
+  (if-let [term (query-params "t")]
+    (-> term
+        (pessoa-by-search-term)
+        (resp/response))
+    (resp/status 400)))
+
+(defn pessoa-by-id [id]
+  (->> {:select [:id :apelido :nome :nascimento :stack]
+        :limit 1
+        :from :pessoas
+        :where [:= :id id]}
+       (one)))
+
+
+;; Handlers
 
 (defn created [{:keys [body-params]}]
   (try
-    (let [data {:nome (:nome body-params),
-                :stack (if (s/valid? ::stack (:stack body-params))
-                         (str/join " " (:stack body-params))
-                         (throw (Exception. "Invalid Stack"))),
-                :apelido (:apelido body-params),
-                :nascimento (Date/valueOf (:nascimento body-params))}
-          values (-> data (select-keys [:nome :stack :apelido]) (vals))
-          search (str/join " " values)
-          data (assoc data :search search)
-          id (insert {:insert-into [:pessoas] :values [data]})
+    (let [id (create-pessoa body-params)
           location (str "/pessoas/" id)]
       (resp/created location))
     (catch Exception _ (resp/status 422))))
 
 
-
-(defn search-term [{:keys [query-params]}]
-  (if-let [term (query-params "t")]
-    (->> {:select [:id :apelido :nome :nascimento :stack]
-          :from :pessoas
-          :where [:ilike :search (str "%" term "%")]}
-         query
-         resp/response)
-    (resp/status 400)))
-
 (defn search-id [{:keys [path-params]}]
-  (if-let [result (->> {:select [:id :apelido :nome :nascimento :stack]
-                        :limit 1
-                        :from :pessoas
-                        :where [:= :id (Integer/parseInt (:id path-params))]}
-                       (query)
-                       (first))]
-    (resp/response result)
+  (if-let [id (Integer/parseInt (:id path-params))]
+    (-> id
+        (pessoa-by-id)
+        (resp/response))
     (resp/status 404)))
 
 (defn count-users [_]
@@ -164,4 +199,5 @@
 
 (defn -main []
   (migrate)
-  (start))
+  (start)
+  (bulk-insert))
