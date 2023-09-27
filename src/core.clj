@@ -20,7 +20,6 @@
             [ring.util.response :as resp])
   (:import [java.sql Date]))
 
-
 ;; Database
 
 (def postgres-url (or (System/getenv "POSTGRES_URL")
@@ -108,8 +107,6 @@
 ;;               :values [@bulk-data]})
 ;;      (ref-set bulk-data [])
 ;;      (recur))))
-
-(query {:select 2})
 
 (defn create-pessoa [body-params]
   (let [id (uuid)
