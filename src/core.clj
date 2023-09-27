@@ -17,7 +17,8 @@
             [reitit.ring.middleware.parameters :as parameters]
             [ring.adapter.jetty :as jetty]
             [hikari-cp.core :as hcp]
-            [ring.util.response :as resp])
+            [ring.util.response :as resp]
+            [clojure.pprint :as pp])
   (:import [java.sql Date]))
 
 ;; Database
@@ -98,15 +99,14 @@
   (str/join ";" [nome stack apelido]))
 
 (defn create-pessoa [body-params]
-  (let [id (uuid)]
         ;; data (merge body-params
         ;;             {:id id
         ;;              :stack (parse-stack body-params),
         ;;              :nascimento (parse-nascimento body-params)
         ;;              :search (parse-search-term body-params)})]
     ;; (query {:insert-into [:pessoas] :values [data]})
-    (query {:select 1})
-    (uuid)))
+  (query {:select 1})
+  1)
 
 (defn pessoa-by-search-term [_]
   (-> {:select [:id :apelido :nome :nascimento :stack]
@@ -115,12 +115,6 @@
       ;;  :where [:ilike :search (str "%" term "%")]
       (query)))
 
-(defn search-term [{:keys [query-params]}]
-  (if-let [term (query-params "t")]
-    (-> term
-        (pessoa-by-search-term)
-        (resp/response))
-    (resp/status 400)))
 
 (defn pessoa-by-id [id]
   (->> {:select [:id :apelido :nome :nascimento :stack]
@@ -145,6 +139,13 @@
         (pessoa-by-id)
         (resp/response))
     (resp/status 404)))
+
+(defn search-term [{:keys [query-params]}]
+  (if-let [term (query-params "t")]
+    (-> term
+        (pessoa-by-search-term)
+        (resp/response))
+    (resp/status 400)))
 
 (defn count-users [_]
   (-> {:select [[:%count.*]]
@@ -183,7 +184,7 @@
 
 (defn start []
   (println (str "Jetty is starting in " server-port "..."))
-  (jetty/run-jetty #'app {:port server-port, :join? false})
+  (jetty/run-jetty #'app {:port 3001, :join? false})
   (println (str "Jetty is running on " server-port "...")))
 
 (defn -main []
@@ -191,3 +192,5 @@
   (start)
   ;; (bulk-insert)
   )
+
+(-main)
