@@ -108,8 +108,6 @@
     (query {:select 1})
     (uuid)))
 
-(create-pessoa {})
-
 (defn pessoa-by-search-term [term]
   (-> {:select [:id :apelido :nome :nascimento :stack]
        :from :pessoas
