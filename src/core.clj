@@ -97,17 +97,6 @@
 (defn parse-search-term [{:keys [nome stack apelido]}]
   (str/join ";" [nome stack apelido]))
 
-;; (def bulk-data (ref []))
-
-;; (defn bulk-insert []
-;;   (a/go-loop []
-;;     (Thread/sleep 2000)
-;;     (dosync
-;;      (insert {:insert-into [:pessoas]
-;;               :values [@bulk-data]})
-;;      (ref-set bulk-data [])
-;;      (recur))))
-
 (defn create-pessoa [body-params]
   (let [id (uuid)
         data (merge body-params
@@ -121,10 +110,11 @@
 
 
 (defn pessoa-by-search-term [term]
-  ;; (-> {:select [:id :apelido :nome :nascimento :stack]
-  ;;      :from :pessoas
-  ;;      :where [:ilike :search (str "%" term "%")]}
-  (-> {:select 1}
+  (-> {:select [:id :apelido :nome :nascimento :stack]
+       :from :pessoas
+       :where [:= :id 1]
+      ;;  :where [:ilike :search (str "%" term "%")]
+       }
       (query)))
 
 (defn search-term [{:keys [query-params]}]
