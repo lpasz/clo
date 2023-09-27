@@ -108,12 +108,11 @@
     (query {:select 1})
     (uuid)))
 
-(defn pessoa-by-search-term [term]
+(defn pessoa-by-search-term [_]
   (-> {:select [:id :apelido :nome :nascimento :stack]
        :from :pessoas
-       :where [:= :id 1]
+       :where [:= :id 1]}
       ;;  :where [:ilike :search (str "%" term "%")]
-       }
       (query)))
 
 (defn search-term [{:keys [query-params]}]
@@ -124,13 +123,11 @@
     (resp/status 400)))
 
 (defn pessoa-by-id [id]
-  (->>
-  ;;  {:select [:id :apelido :nome :nascimento :stack]
-  ;;   :limit 1
-  ;;   :from :pessoas
-  ;;   :where [:= :id id]}
-   {:select 1}
-   (query)))
+  (->> {:select [:id :apelido :nome :nascimento :stack]
+        :limit 1
+        :from :pessoas
+        :where [:= :id id]}
+       (query)))
 
 ;; Handlers
 
