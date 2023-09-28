@@ -82,18 +82,23 @@
 (defn max-n-characters [str n]
   (>= n (count str)))
 
-(s/def ::nome (s/and string? #(max-n-characters % 100)))
-(s/def ::apelido (s/and string? #(max-n-characters % 32)))
-(s/def ::tech (s/coll-of (s/and string? #(max-n-characters % 32))))
-(s/def ::stack (s/or :nil nil? :stack ::tech))
-(s/def ::nascimento #{"2021-01-01" "2020-02-02" "1980-01-12"})
+(defn min-n-characters [str n]
+  (<= n (count str)))
+
+(s/def ::nome (s/and string? #(min-n-characters % 10) #(max-n-characters % 100)))
+(s/def ::apelido (s/and string? #(min-n-characters % 10) #(max-n-characters % 32)))
+(s/def ::stack (s/coll-of (s/and string? #(min-n-characters % 10) #(max-n-characters % 32))))
+(s/def ::nascimento #{"2016-11-18" "2015-7-19" "1987-11-16" "2011-1-12"
+                      "1984-3-21" "1989-6-9" "1989-8-1" "2006-8-5" "2011-10-13"})
 (s/def ::pessoas (s/keys :req-un [::nome ::apelido ::nascimento ::stack]))
 
 (defn uuid [] (java.util.UUID/randomUUID))
 
 (defn parse-stack [{:keys [stack]}]
   (if (s/valid? ::stack stack)
-    (str/join ";" stack)
+    (->> stack
+         (filter #(not (nil? %)))
+         (str/join ";"))
     (throw (Exception. "Invalid Stack"))))
 
 (defn parse-nascimento [{:keys [nascimento]}]
@@ -102,21 +107,23 @@
 (defn parse-search-term [{:keys [nome stack apelido]}]
   (str/join ";" [nome stack apelido]))
 
-(defn create-pessoa [body-params]
-  (let [id (uuid)
-        data (merge body-params
-                    {:id id
-                     :stack (parse-stack body-params),
-                     :nascimento (parse-nascimento body-params)
-                     :search (parse-search-term body-params)})]
-    (query {:insert-into [:pessoas]
-            :values [data]})))
+(defn prepare-pessoa [body-params]
+  (merge body-params
+         {:id (uuid)
+          :stack (parse-stack body-params)
+          :nascimento (parse-nascimento body-params)
+          :search (parse-search-term body-params)}))
 
-(defn pessoa-by-search-term [_term]
+(defn create-pessoa [body-params]
+  (let [data (prepare-pessoa body-params)]
+    (insert {:insert-into [:pessoas]
+             :values [data]})))
+
+(defn pessoa-by-search-term [term]
   (let [id (uuid)]
     (-> {:select [:id :apelido :nome :nascimento :stack]
          :from :pessoas
-         :where [:= :id id]}
+         :where [:ilike :search (str "%" term "%")]}
         (query))))
 
 

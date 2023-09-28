@@ -1,3 +1,2 @@
- {:up [" CREATE EXTENSION pg_trgm; "
-      " CREATE INDEX idx_gin ON pessoas USING gin (search gin_trgm_ops); "]
- :down [" DROP INDEX idx_gist "]}
+ {:up [" CREATE INDEX idx_gin ON pessoas USING gin (search gin_trgm_ops)"]
+  :down [" DROP INDEX idx_gist "]}

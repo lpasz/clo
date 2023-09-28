@@ -1,1 +1,3 @@
 ALTER ROLE postgres SUPERUSER;
+CREATE EXTENSION "pg_trgm";
+CREATE EXTENSION "uuid-ossp";
