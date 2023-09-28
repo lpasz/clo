@@ -5,7 +5,7 @@ services:
     hostname: app1
     environment:
       SERVER_PORT: 8080
-      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres
+      POSTGRES_URL: postgres://clo_user:clo_password@postgres:5432/clo_db
     expose:
       - "8080"
     depends_on:
@@ -25,19 +25,19 @@ services:
     hostname: app2
     environment:
       SERVER_PORT: 8081
-      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres
+      POSTGRES_URL: postgres://clo_user:clo_password@postgres:5432/clo_db
     expose:
       - "8081"
 
   postgres:
     image: postgres
     command: postgres -c 'max_connections=450' -c 'log_error_verbosity=terse'
-    user: postgres
+    user: root
     environment:
       POSTGRES_HOST: localhost
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: clo_db
+      POSTGRES_USER: clo_user
+      POSTGRES_PASSWORD: clo_password
     ports:
       - 5432:5432
     expose: 
