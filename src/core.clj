@@ -3,7 +3,8 @@
   (:require [clojure.java.jdbc :as j]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            ;; [clojure.core.async :as a]
+            [clojure.core.async :as a]
+            [clojure.spec.gen.alpha :as gen]
             [honey.sql :as sql]
             [muuntaja.core :as m]
             [ragtime.jdbc :as jdbc]
@@ -30,8 +31,8 @@
 
 (defn datasource-options []
   (let [[username password] (str/split (or (.getUserInfo db-uri) ":") #":")]
-    {:username           (or username (System/getProperty "user.name"))
-     :password           (or password "")
+    {:username           (or username "postgres")
+     :password           (or password "postgres")
      :port-number        (.getPort db-uri)
      :database-name      (str/replace-first (.getPath db-uri) "/" "")
      :server-name        (.getHost db-uri)
@@ -66,7 +67,7 @@
 ;; Migrations
 
 (defn config []
-  {:datastore  (jdbc/sql-database postgres-url)
+  {:datastore  (jdbc/sql-database @db-conn)
    :migrations (jdbc/load-directory "./migrations")
    :strategy rs/rebase})
 
@@ -81,9 +82,12 @@
 (defn max-n-characters [str n]
   (>= n (count str)))
 
+(s/def ::nome (s/and string? #(max-n-characters % 100)))
+(s/def ::apelido (s/and string? #(max-n-characters % 32)))
 (s/def ::tech (s/coll-of (s/and string? #(max-n-characters % 32))))
-(s/def ::stack (s/or :nil nil?
-                     :stack ::tech))
+(s/def ::stack (s/or :nil nil? :stack ::tech))
+(s/def ::nascimento #{"2021-01-01" "2020-02-02" "1980-01-12"})
+(s/def ::pessoas (s/keys :req-un [::nome ::apelido ::nascimento ::stack]))
 
 (defn uuid [] (java.util.UUID/randomUUID))
 
@@ -99,20 +103,18 @@
   (str/join ";" [nome stack apelido]))
 
 (defn create-pessoa [body-params]
-        ;; data (merge body-params
-        ;;             {:id id
-        ;;              :stack (parse-stack body-params),
-        ;;              :nascimento (parse-nascimento body-params)
-        ;;              :search (parse-search-term body-params)})]
-    ;; (query {:insert-into [:pessoas] :values [data]})
-  (query {:select 1})
-  1)
+  (let [id (uuid)
+        data (merge body-params
+                    {:id id
+                     :stack (parse-stack body-params),
+                     :nascimento (parse-nascimento body-params)
+                     :search (parse-search-term body-params)})]
+    (query {:insert-into [:pessoas] :values [data]})))
 
-(defn pessoa-by-search-term [_]
+(defn pessoa-by-search-term [term]
   (-> {:select [:id :apelido :nome :nascimento :stack]
        :from :pessoas
-       :where [:= :id 1]}
-      ;;  :where [:ilike :search (str "%" term "%")]
+       :where [:= :id (uuid)]}
       (query)))
 
 
@@ -190,6 +192,4 @@
 (defn -main []
   (try (migrate)
        (catch Exception e nil))
-  (start)
-  ;; (bulk-insert)
-  )
+  (start))
