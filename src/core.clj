@@ -111,11 +111,12 @@
                      :search (parse-search-term body-params)})]
     (query {:insert-into [:pessoas] :values [data]})))
 
-(defn pessoa-by-search-term [term]
-  (-> {:select [:id :apelido :nome :nascimento :stack]
-       :from :pessoas
-       :where [:= :id (uuid)]}
-      (query)))
+(defn pessoa-by-search-term [_term]
+  (let [id (uuid)]
+    (-> {:select [:id :apelido :nome :nascimento :stack]
+         :from :pessoas
+         :where [:= :id id]}
+        (query))))
 
 
 (defn pessoa-by-id [id]
