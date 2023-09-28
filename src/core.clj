@@ -125,7 +125,7 @@
         :limit 1
         :from :pessoas
         :where [:= :id id]}
-       (query)))
+       (one)))
 
 ;; Handlers
 
