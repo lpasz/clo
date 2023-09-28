@@ -67,7 +67,7 @@
 ;; Migrations
 
 (defn config []
-  {:datastore  (jdbc/sql-database @db-conn)
+  {:datastore  (jdbc/sql-database postgres-url)
    :migrations (jdbc/load-directory "./migrations")
    :strategy rs/rebase})
 
@@ -109,7 +109,8 @@
                      :stack (parse-stack body-params),
                      :nascimento (parse-nascimento body-params)
                      :search (parse-search-term body-params)})]
-    (query {:insert-into [:pessoas] :values [data]})))
+    (query {:insert-into [:pessoas]
+            :values [data]})))
 
 (defn pessoa-by-search-term [_term]
   (let [id (uuid)]
@@ -191,6 +192,7 @@
   (println (str "Jetty is running on " server-port "...")))
 
 (defn -main []
-  (try (migrate)
-       (catch Exception e nil))
+  (try
+    (migrate)
+    (catch Exception e nil))
   (start))

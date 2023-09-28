@@ -53,6 +53,8 @@ services:
         limits:
           cpus: '0.4'
           memory: '1.5GB'
+    volumes:
+      - ./scripts/:/docker-entrypoint-initdb.d/
 
   nginx: # Load Balancer
     image: nginx:latest
