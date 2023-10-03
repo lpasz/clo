@@ -19,7 +19,7 @@
 ;; Database Config with Hikari connection pool
 
 (def postgres-url (or (System/getenv "POSTGRES_URL")
-                      "postgresql://localhost:5432/postgres"))
+                      "postgres://clo_user:clo_password@localhost:5432/clo_db"))
 
 (def db-uri (java.net.URI. postgres-url))
 
@@ -123,9 +123,9 @@
 
 
 (defn search-id [{:keys [path-params]}]
-  (if-let [pessoa (some-> path-params 
-                          :id 
-                          uuid 
+  (if-let [pessoa (some-> path-params
+                          :id
+                          uuid
                           pessoa-by-id)]
     (resp/response pessoa)
     (resp/status 404)))

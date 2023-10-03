@@ -14,9 +14,9 @@ ALTER ROLE clo_user SUPERUSER;
 SET default_tablespace = '';
 SET default_table_access_method = heap;
 
-DROP TABLE IF EXISTS public.PESSOA;
+DROP TABLE IF EXISTS public.PESSOAS;
 
-CREATE TABLE public.PESSOA (
+CREATE TABLE public.PESSOAS (
     ID uuid NOT NULL,
     APELIDO VARCHAR(32) UNIQUE NOT NULL,
     NASCIMENTO VARCHAR(12) NOT NULL,
@@ -30,10 +30,9 @@ CREATE TABLE public.PESSOA (
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
--- Defina o esquema 'public' novamente antes de criar o índice
 SELECT pg_catalog.set_config('search_path', 'public', false);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS IDX_PESSOA_BUSCA_TGRM ON public.PESSOA USING GIST (SEARCH GIST_TRGM_OPS(siglen=256)) 
+CREATE INDEX CONCURRENTLY IF NOT EXISTS IDX_PESSOAS_SEARCH_TGRM ON public.PESSOA USING GIST (SEARCH GIST_TRGM_OPS(siglen=256)) 
 INCLUDE(apelido, nascimento, nome, ID, stack);
 
-ALTER TABLE public.PESSOA OWNER TO clo_user;
+ALTER TABLE public.PESSOAS OWNER TO clo_user;
