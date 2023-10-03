@@ -15,11 +15,11 @@ services:
       nofile:
         soft: 1000000
         hard: 1000000
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '0.5'
-    #       memory: '0.6GB'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '0.6GB'
   app2:
     <<: *app
     hostname: app2
@@ -48,11 +48,11 @@ services:
       timeout: 5s
       retries: 20
       start_period: 10s
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '0.4'
-    #       memory: '1.5GB'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: '1.5GB'
     volumes:
       - ./scripts/:/docker-entrypoint-initdb.d/
 
@@ -70,8 +70,8 @@ services:
       nofile:
         soft: 1000000
         hard: 1000000
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '0.1'
-    #       memory: '0.3GB'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: '0.3GB'

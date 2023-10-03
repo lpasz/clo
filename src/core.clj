@@ -131,9 +131,12 @@
 
 (defn search-term [{:keys [query-params]}]
   (if-let [term (query-params "t")]
-    (-> term
-        (pessoa-by-search-term)
-        (resp/response))
+    (->
+    ;;  term
+    ;;  (pessoa-by-search-term)
+     (uuid)
+     (pessoa-by-id)
+     (resp/response))
     (resp/status 400)))
 
 (defn count-users [_]
