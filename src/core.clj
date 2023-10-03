@@ -22,7 +22,7 @@
 ;; Database Config with Hikari connection pool
 
 (def postgres-url (or (System/getenv "POSTGRES_URL")
-                      "postgres://clo_user:clo_password@localhost:5432/clo_db"))
+                      "postgresql://localhost:5432/postgres"))
 
 (def db-uri (java.net.URI. postgres-url))
 
@@ -123,8 +123,9 @@
 
 
 (defn search-id [{:keys [path-params]}]
-  (if-let [id (Integer/parseInt (:id path-params))]
+  (if-let [id (:id path-params)]
     (-> id
+        (java.util.UUID/fromString)
         (pessoa-by-id)
         (resp/response))
     (resp/status 404)))
@@ -134,8 +135,6 @@
     (->
      term
      (pessoa-by-search-term)
-    ;;  (uuid)
-    ;;  (pessoa-by-id)
      (resp/response))
     (resp/status 400)))
 
@@ -172,7 +171,7 @@
                         ["/contagem-pessoas" {:get count-users}]]
                        router-config)))
 
-(def server-port (Integer/parseInt (or (System/getenv "SERVER_PORT") "8080")))
+(def server-port (Integer/parseInt (or (System/getenv "SERVER_PORT") "3011")))
 
 (def jetty-server (delay (jetty/run-jetty #'app {:port server-port, :join? false})))
 
@@ -201,3 +200,14 @@
   (migrate)
   ;; Start web server
   (start))
+
+
+(comment
+  (create-pessoa {:stack ["Elixir", "Clojure"]
+                  :nascimento "1997-01-23"
+                  :apelido "pasz"
+                  :nome "Lucas"})
+  (pessoa-by-search-term "Lucas")
+  (pessoa-by-id (uuid))
+  ;;
+  )
