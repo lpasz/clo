@@ -206,9 +206,9 @@
 (comment
   (create-pessoa {:stack ["Elixir", "Clojure"]
                   :nascimento "1997-01-23"
-                  :apelido "pasz"
+                  :apelido "lpasz"
                   :nome "Lucas"})
-  (pessoa-by-search-term "Lucas")
-  (pessoa-by-id (uuid))
+  (time (pessoa-by-search-term "Lucas"))
+  (time (pessoa-by-id (uuid)))
   ;;
   )
