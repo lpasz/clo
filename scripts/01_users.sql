@@ -36,4 +36,4 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS IDX_PESSOA_BUSCA_TGRM ON public.PESSOA USING GIST (SEARCH GIST_TRGM_OPS(siglen=256)) 
 INCLUDE(apelido, nascimento, nome, ID, stack);
 
-ALTER TABLE public.PESSOA OWNER TO rinha;
+ALTER TABLE public.PESSOA OWNER TO clo_user;
