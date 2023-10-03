@@ -132,10 +132,10 @@
 (defn search-term [{:keys [query-params]}]
   (if-let [term (query-params "t")]
     (->
-    ;;  term
-    ;;  (pessoa-by-search-term)
-     (uuid)
-     (pessoa-by-id)
+     term
+     (pessoa-by-search-term)
+    ;;  (uuid)
+    ;;  (pessoa-by-id)
      (resp/response))
     (resp/status 400)))
 
