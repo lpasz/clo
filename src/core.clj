@@ -69,7 +69,9 @@
 ;; spec to check stack
 (s/def ::stack (s/or :nil nil? :stack-coll (s/coll-of (s/and string? #(max-n-characters % 32)))))
 
-(defn uuid [] (java.util.UUID/randomUUID))
+(defn uuid
+  ([] (java.util.UUID/randomUUID))
+  ([value] (when value (java.util.UUID/fromString value))))
 
 (defn parse-stack [{:keys [stack]}]
   (if (s/valid? ::stack stack)
@@ -121,11 +123,11 @@
 
 
 (defn search-id [{:keys [path-params]}]
-  (if-let [id (:id path-params)]
-    (-> id
-        (java.util.UUID/fromString)
-        (pessoa-by-id)
-        (resp/response))
+  (if-let [pessoa (some-> path-params 
+                          :id 
+                          uuid 
+                          pessoa-by-id)]
+    (resp/response pessoa)
     (resp/status 404)))
 
 (defn search-term [{:keys [query-params]}]
@@ -188,9 +190,10 @@
 (comment
   (create-pessoa {:stack ["Elixir", "Clojure"]
                   :nascimento "1997-01-23"
-                  :apelido "lpasz"
+                  :apelido "llpasz"
                   :nome "Lucas"})
+
   (time (pessoa-by-search-term "Lucas"))
-  (time (pessoa-by-id (uuid)))
+  (time (pessoa-by-id (java.util.UUID/fromString "6cb71100-20ac-463f-950e-8e603a2aa949")))
   ;;
   )
