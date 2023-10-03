@@ -42,7 +42,6 @@
      :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 
-(datasource-options)
 
 (def db-conn
   (delay {:datasource (hcp/make-datasource (datasource-options))}))
@@ -186,22 +185,3 @@
   (println (str "Jetty is running on " server-port "...")))
 
 (defn -main [] (start))
-
-(comment
-  (prepare-pessoa {:stack ["Elixir", "Clojure"]
-                   :nascimento "1997-01-23"
-                   :apelido "lpasz"
-                   :nome "Lucas"})
-  (create-pessoa {:stack ["Elixir", "Clojure"]
-                  :nascimento "1997-01-23"
-                  :apelido "pasz"
-                  :nome "Lucas"})
-
-  (time (pessoa-by-search-term "Lucas"))
-  (time (pessoa-by-id (java.util.UUID/fromString "0997d3fc-ce8e-49b4-b5c9-2ad9746bd6c9")))
-
-  (search-id {:path-params {:id "0997f3fc-ce8e-49b4-b5c9-2ad9746bd6c9"}})
-  (search-id {:path-params {:id "0997d3fc-ce8e-49b4-b5c9-2ad9746bd6c9"}})
-  (time (search-term {:query-params {"t" "Elixir"}}))
-  ;;
-  )
