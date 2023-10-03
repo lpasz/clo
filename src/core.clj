@@ -42,6 +42,8 @@
      :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 
+(datasource-options)
+
 (def db-conn
   (delay {:datasource (hcp/make-datasource (datasource-options))}))
 
@@ -77,7 +79,7 @@
   (if (s/valid? ::stack stack)
     (->> stack
          (filter not-empty)
-         (str/join ";"))
+         (str/join " "))
     (throw (Exception. "Invalid Stack"))))
 
 (defn parse-nascimento [{:keys [nascimento]}]
@@ -90,8 +92,7 @@
   (merge body-params
          {:id (uuid)
           :stack (parse-stack body-params)
-          :nascimento (parse-nascimento body-params)
-          :search (parse-search-term body-params)}))
+          :nascimento (parse-nascimento body-params)}))
 
 (defn create-pessoa [body-params]
   (let [data (prepare-pessoa body-params)]
@@ -175,7 +176,7 @@
                         ["/contagem-pessoas" {:get count-users}]]
                        router-config)))
 
-(def server-port (Integer/parseInt (or (System/getenv "SERVER_PORT") "3011")))
+(def server-port (Integer/parseInt (or (System/getenv "SERVER_PORT") "8080")))
 
 (def jetty-server (delay (jetty/run-jetty #'app {:port server-port, :join? false})))
 
@@ -186,14 +187,21 @@
 
 (defn -main [] (start))
 
-
 (comment
+  (prepare-pessoa {:stack ["Elixir", "Clojure"]
+                   :nascimento "1997-01-23"
+                   :apelido "lpasz"
+                   :nome "Lucas"})
   (create-pessoa {:stack ["Elixir", "Clojure"]
                   :nascimento "1997-01-23"
-                  :apelido "llpasz"
+                  :apelido "pasz"
                   :nome "Lucas"})
 
   (time (pessoa-by-search-term "Lucas"))
-  (time (pessoa-by-id (java.util.UUID/fromString "6cb71100-20ac-463f-950e-8e603a2aa949")))
+  (time (pessoa-by-id (java.util.UUID/fromString "0997d3fc-ce8e-49b4-b5c9-2ad9746bd6c9")))
+
+  (search-id {:path-params {:id "0997f3fc-ce8e-49b4-b5c9-2ad9746bd6c9"}})
+  (search-id {:path-params {:id "0997d3fc-ce8e-49b4-b5c9-2ad9746bd6c9"}})
+  (time (search-term {:query-params {"t" "Elixir"}}))
   ;;
   )
