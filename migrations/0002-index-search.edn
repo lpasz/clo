@@ -1,3 +1,0 @@
- {:up [" CREATE INDEX idx_gin ON pessoas USING gin (search gin_trgm_ops) "
-       " CREATE INDEX idx_btree ON pessoas (search) "]
- :down [" DROP INDEX idx_gist "]}

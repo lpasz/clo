@@ -6,9 +6,6 @@
             [hikari-cp.core :as hcp]
             [honey.sql :as sql]
             [muuntaja.core :as m]
-            [ragtime.jdbc :as jdbc]
-            [ragtime.repl :as rag]
-            [ragtime.strategy :as rs]
             [reitit.coercion.spec]
             [reitit.dev.pretty :as pretty]
             [reitit.ring :as ring]
@@ -181,26 +178,7 @@
   @jetty-server
   (println (str "Jetty is running on " server-port "...")))
 
-;; Migrations
-
-(defn config []
-  {:datastore  (jdbc/sql-database postgres-url)
-   :migrations (jdbc/load-directory "./migrations")
-   :strategy rs/rebase})
-
-(defn migrate []
-  (try
-    (rag/migrate (config))
-    (catch Exception _ nil)))
-
-(defn rollback []
-  (rag/rollback (config)))
-
-(defn -main []
-  ;; Done in a single connection before we start the connection pool
-  (migrate)
-  ;; Start web server
-  (start))
+(defn -main [] (start))
 
 
 (comment

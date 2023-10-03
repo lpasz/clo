@@ -1,7 +1,0 @@
- {:up [" CREATE TABLE pessoas (id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-                               apelido varchar(32) UNIQUE NOT NULL,
-                               nome varchar(100) NOT NULL,
-                               nascimento DATE NOT NULL,
-                               stack TEXT,
-                               search TEXT) "]
- :down [" DROP TABLE pessoas "]}
