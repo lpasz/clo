@@ -18,7 +18,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '0.3'
           memory: '0.6GB'
   app2:
     <<: *app
@@ -51,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.4'
+          cpus: '0.8'
           memory: '1.5GB'
     volumes:
       - ./scripts/:/docker-entrypoint-initdb.d/
