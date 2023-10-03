@@ -144,6 +144,9 @@
       (str)
       (resp/response)))
 
+(defn health-check [_]
+  (resp/status 200))
+
 ;; Router
 
 (def router-config
@@ -163,7 +166,8 @@
                                                       exception/default-handler)})]}})
 
 (def app (ring/ring-handler
-          (ring/router [["/pessoas" {:post created
+          (ring/router [["/" {:get health-check}]
+                        ["/pessoas" {:post created
                                      :get search-term}]
                         ["/pessoas/:id" {:get search-id}]
                         ["/contagem-pessoas" {:get count-users}]]
