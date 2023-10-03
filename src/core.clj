@@ -102,6 +102,7 @@
 (defn pessoa-by-search-term [term]
   (-> {:select [:id :apelido :nome :nascimento :stack]
        :from :pessoas
+       :limit 50
        :where [:ilike :search (str "%" term "%")]}
       (query)))
 
