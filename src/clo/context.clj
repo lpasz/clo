@@ -33,8 +33,8 @@
 
 (defn create-pessoa [body-params]
   (let [data (prepare-pessoa body-params)]
-    (future (db/insert {:insert-into [:pessoas]
-                        :values [data]}))))
+    (db/insert {:insert-into [:pessoas]
+                :values [data]})))
 
 (defn count-users []
   (-> {:select [[:%count.*]]
