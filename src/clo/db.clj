@@ -1,5 +1,4 @@
 (ns clo.db
-  (:gen-class)
   (:require [clojure.java.jdbc :as j]
             [clojure.string :as str]
             [hikari-cp.core :as hcp]
@@ -44,9 +43,9 @@
        (j/query @db-conn)))
 
 (defn one [q]
-  (first (query q)))
+  (-> q query first))
 
 (defn insert [q]
-  (-> @db-conn
-      (j/execute! (sql/format q) {:return-keys ["id"]})
-      (:id)))
+  (->> q
+       (sql/format)
+       (j/execute! @db-conn)))

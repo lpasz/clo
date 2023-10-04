@@ -1,5 +1,4 @@
 (ns clo-web.server
-  (:gen-class)
   (:require [ring.adapter.jetty :as jetty]
             [clo-web.router :refer [router]]))
 

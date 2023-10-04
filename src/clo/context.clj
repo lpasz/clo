@@ -1,5 +1,4 @@
 (ns clo.context
-  (:gen-class)
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [clo.db :as db])
@@ -34,8 +33,8 @@
 
 (defn create-pessoa [body-params]
   (let [data (prepare-pessoa body-params)]
-    (db/insert {:insert-into [:pessoas]
-                :values [data]})))
+    (future (db/insert {:insert-into [:pessoas]
+                        :values [data]}))))
 
 (defn count-users []
   (-> {:select [[:%count.*]]
