@@ -32,8 +32,10 @@
           :nascimento (parse-nascimento body-params)}))
 
 (defn create-pessoa [body-params]
-  (db/insert {:insert-into [:pessoas]
-              :values [(prepare-pessoa body-params)]}))
+  (let [pessoa (prepare-pessoa body-params)]
+    (db/insert {:insert-into [:pessoas]
+                :values [pessoa]})
+    (:id pessoa)))
 
 (defn count-users []
   (-> {:select [[:%count.*]]
