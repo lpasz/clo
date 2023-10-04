@@ -1,0 +1,10 @@
+{
+  "simulation": "RinhaBackendSimulation",
+  "simulationId": "rinhabackendsimulation-20231004001651175",
+  "start": 1696378612122,
+  "description": "2ed71ca3096c2bf726073c70c77655161fbeadc8",
+  "scenarios": ["Criação E Talvez Consulta de Pessoas", "Busca Válida de Pessoas", "Busca Inválida de Pessoas"],
+  "assertions": [
+
+  ]
+}
