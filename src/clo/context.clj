@@ -32,9 +32,8 @@
           :nascimento (parse-nascimento body-params)}))
 
 (defn create-pessoa [body-params]
-  (let [data (prepare-pessoa body-params)]
-    (db/insert {:insert-into [:pessoas]
-                :values [data]})))
+  (db/insert {:insert-into [:pessoas]
+              :values [(prepare-pessoa body-params)]}))
 
 (defn count-users []
   (-> {:select [[:%count.*]]
@@ -43,15 +42,13 @@
       (:count)))
 
 (defn pessoa-by-search-term [term]
-  (-> {:select [:id :apelido :nome :nascimento :stack]
-       :from :pessoas
-       :limit 50
-       :where [:ilike :search (str "%" term "%")]}
-      (db/query)))
+  (db/query {:select [:id :apelido :nome :nascimento :stack]
+             :from :pessoas
+             :limit 50
+             :where [:ilike :search (str "%" term "%")]}))
 
 (defn pessoa-by-id [id]
-  (->> {:select [:id :apelido :nome :nascimento :stack]
-        :limit 1
-        :from :pessoas
-        :where [:= :id id]}
-       (db/one)))
+  (db/one {:select [:id :apelido :nome :nascimento :stack]
+           :limit 1
+           :from :pessoas
+           :where [:= :id id]}))
