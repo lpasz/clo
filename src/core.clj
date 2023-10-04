@@ -33,12 +33,12 @@
      :auto-commit        true
      :read-only          false
      :adapter            "postgresql"
-     :connection-timeout 30000
+     :connection-timeout 60000
      :validation-timeout 5000
      :idle-timeout       600000
      :max-lifetime       1800000
-     :minimum-idle       10
-     :maximum-pool-size  50
+     :minimum-idle       50
+     :maximum-pool-size  100
      :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 
@@ -184,4 +184,5 @@
   @jetty-server
   (println (str "Jetty is running on " server-port "...")))
 
-(defn -main [] (start))
+(defn -main [] 
+  (start))
