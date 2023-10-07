@@ -3,7 +3,7 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN clj -T:build uber
 
-FROM openjdk:22-slim-bookworm
+FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=BUILD /usr/src/app/target/app-standalone.jar ./app.jar
-CMD ["java", "-jar", "app.jar"]
+COPY --from=build /usr/src/app/target/app-standalone.jar ./app.jar
+CMD ["java", "-jar", "./app.jar"]
