@@ -26,8 +26,8 @@
      :validation-timeout 5000
      :idle-timeout       600000
      :max-lifetime       1800000
-     :minimum-idle       50
-     :maximum-pool-size  150
+     :minimum-idle       100
+     :maximum-pool-size  100
      :pool-name          (str "db-pool" (java.util.UUID/randomUUID))
      :register-mbeans    false}))
 

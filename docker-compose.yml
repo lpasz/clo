@@ -26,7 +26,7 @@ services:
       resources:
         limits:
           cpus: '0.35'
-          memory: '1.5GB'
+          memory: '0.6GB'
   app2:
     <<: *app
     hostname: app2
