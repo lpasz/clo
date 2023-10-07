@@ -1,6 +1,6 @@
 (ns core
-  (:gen-class)
-  (:require [clo-web.server :as server]))
+  (:require [clo-web.server :as server])
+  (:gen-class))
 
 (defn -main []
   (server/start))
